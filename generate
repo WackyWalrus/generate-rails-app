@@ -1,46 +1,64 @@
 #!/bin/sh
 read -p 'App name: ' appname
-read -p '[B]ootstrap? ' extras
+read -p '[B]ootstrap [R]eact : ' extras
 
 # generate app
-rails new $appname --skip-coffee --webpack=react --database=postgresql
+if [[ $extras == *"R"* ]]; then
+	rails new $appname --skip-coffee --webpack=react --database=postgresql
+else
+	rails new $appname --skip-coffee --webpack -database=postgresql
+fi
+
 # cd into app
 cd $appname
 # update bin
 rake app:update:bin
-# add react-rails
-echo "Adding react-rails"
-echo "gem 'react-rails'" >> Gemfile
 # run bundle install
 bundle install
 # run yarn install just incase
 yarn install
-# install react-rails with webpacker
-rails webpacker:install:react
-rails generate react:install
-# generate react component
-rails g react:component HelloWorld greeting:string
 # add route
 cat ../generate-rails-app/files/routes.rb > config/routes.rb
 # generate pages controller
 rails generate controller pages
+# make view
+touch app/views/pages/index.html.erb
 # add controller action
 cat ../generate-rails-app/files/pages_controller.rb > app/controllers/pages_controller.rb
-# make view
-echo '<%= react_component("HelloWorld", { greeting: "Hello" }, { prerender: true }) %>' > app/views/pages/index.html.erb
 # edit layout to have js and css
 cat ../generate-rails-app/files/application.html.erb > app/views/layouts/application.html.erb
-# edit application.js to include scss
+# edit js file to have scss
 cat ../generate-rails-app/files/application.js > app/javascript/packs/application.js
 # create scss file
 mkdir app/javascript/scss
 touch app/javascript/scss/main.scss
+
+if [[ $extras == *"R"* ]]; then
+	echo "Adding react-rails"
+	echo "gem 'react-rails'" >> Gemfile
+	# run bundle install
+	bundle install
+	# run yarn install just incase
+	yarn install
+	# install react-rails with webpacker
+	rails webpacker:install:react
+	rails generate react:install
+	# generate react component
+	rails g react:component HelloWorld greeting:string
+	# update view
+	echo '<%= react_component("HelloWorld", { greeting: "Hello" }, { prerender: true }) %>' >> app/views/pages/index.html.erb
+	# edit application.js to include scss
+	# cat ../generate-rails-app/files/application.js > app/javascript/packs/application.js
+	echo "var componentRequireContext = require.context('components', true)" >> app/javascript/packs/application.js
+	echo "var ReactRailsUJS = require('react_ujs')" >> app/javascript/packs/application.js
+	echo "ReactRailsUJS.useContext(componentRequireContext)" >> app/javascript/packs/application.js
+fi
 
 if [[ $extras == *"B"* ]]; then
 	yarn add bootstrap-sass
 	echo '@import "~bootstrap-sass/assets/stylesheets/bootstrap";' >> app/javascript/scss/main.scss
 	yarn add bootstrap
 	yarn add jquery
-	cat ../generate-rails-app/files/bootstrap/application.js > app/javascript/packs/application.js
+	echo "import Bootstrap from 'bootstrap/dist/js/bootstrap'" >> app/javascript/packs/application.js
 	cat ../generate-rails-app/files/bootstrap/environment.js > config/webpack/environment.js
 fi
