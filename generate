@@ -49,10 +49,9 @@ if [[ $extras == *"R"* ]]; then
 	# update view
 	echo '<%= react_component("HelloWorld", { greeting: "Hello" }, { prerender: true }) %>' >> app/views/pages/index.html.erb
 	# edit application.js to include scss
-	# cat ../generate-rails-app/files/application.js > app/javascript/packs/application.js
-	echo "var componentRequireContext = require.context('components', true)" >> app/javascript/packs/application.js
-	echo "var ReactRailsUJS = require('react_ujs')" >> app/javascript/packs/application.js
-	echo "ReactRailsUJS.useContext(componentRequireContext)" >> app/javascript/packs/application.js
+	#echo "var componentRequireContext = require.context('components', true)" >> app/javascript/packs/application.js
+	#echo "var ReactRailsUJS = require('react_ujs')" >> app/javascript/packs/application.js
+	#echo "ReactRailsUJS.useContext(componentRequireContext)" >> app/javascript/packs/application.js
 fi
 
 if [[ $extras == *"B"* ]]; then
